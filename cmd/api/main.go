@@ -74,7 +74,7 @@ func main() {
 	logger := slog.New(
 		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource: false,
-			Level: slog.LevelInfo,
+			Level:     slog.LevelInfo,
 		}),
 	)
 
@@ -82,6 +82,7 @@ func main() {
 	mux.HandleFunc("GET /health", health)
 
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
+	mux.HandleFunc("POST /v1/users/{user_id}/setting", handler.CreateUserSetting(db, logger))
 
 	log.Println("listening on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
