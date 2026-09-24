@@ -37,59 +37,59 @@ type createUserResponse struct {
 	Birthday    *time.Time `json:"birthday"`
 }
 
-func (ur *createUserRequest) Normalize() {
-	ur.Name = strings.TrimSpace(ur.Name)
-	ur.DisplayName = strings.TrimSpace(ur.DisplayName)
-	ur.Handle = strings.TrimSpace(ur.Handle)
-	ur.Email = strings.TrimSpace(ur.Email)
-	ur.Bio = strings.TrimSpace(ur.Bio)
-	ur.Birthday = strings.TrimSpace(ur.Birthday)
+func (r *createUserRequest) Normalize() {
+	r.Name = strings.TrimSpace(r.Name)
+	r.DisplayName = strings.TrimSpace(r.DisplayName)
+	r.Handle = strings.TrimSpace(r.Handle)
+	r.Email = strings.TrimSpace(r.Email)
+	r.Bio = strings.TrimSpace(r.Bio)
+	r.Birthday = strings.TrimSpace(r.Birthday)
 }
 
-func (ur createUserRequest) Validate() error {
-	if ur.Name == "" {
+func (r createUserRequest) Validate() error {
+	if r.Name == "" {
 		return errors.New("name is required")
 	}
-	if utf8.RuneCountInString(ur.Name) > 20 {
+	if utf8.RuneCountInString(r.Name) > 20 {
 		return errors.New("name must be 20 characters or less")
 	}
 
-	if ur.DisplayName == "" {
+	if r.DisplayName == "" {
 		return errors.New("display name is required")
 	}
-	if utf8.RuneCountInString(ur.DisplayName) > 20 {
+	if utf8.RuneCountInString(r.DisplayName) > 20 {
 		return errors.New("display name must be 20 characters or less")
 	}
 
-	if ur.Handle == "" {
+	if r.Handle == "" {
 		return errors.New("handle is required")
 	}
-	if utf8.RuneCountInString(ur.Handle) > 20 {
+	if utf8.RuneCountInString(r.Handle) > 20 {
 		return errors.New("handle must be 20 characters or less")
 	}
-	if strings.ContainsAny(ur.Handle, "/?#:@=&") {
+	if strings.ContainsAny(r.Handle, "/?#:@=&") {
 		return errors.New("handle contains invalid characters")
 	}
 
-	if ur.Email == "" {
+	if r.Email == "" {
 		return errors.New("email is required")
 	}
-	if utf8.RuneCountInString(ur.Email) > 255 {
+	if utf8.RuneCountInString(r.Email) > 255 {
 		return errors.New("email must be 255 characters or less")
 	}
-	address, err := mail.ParseAddress(ur.Email)
-	if err != nil || address.Address != ur.Email {
+	address, err := mail.ParseAddress(r.Email)
+	if err != nil || address.Address != r.Email {
 		return errors.New("email has an invalid format")
 	}
 
-	if ur.Password == "" {
+	if r.Password == "" {
 		return errors.New("password is required")
 	}
-	if len([]byte(ur.Password)) > 72 || len([]byte(ur.Password)) < 8 {
+	if len([]byte(r.Password)) > 72 || len([]byte(r.Password)) < 8 {
 		return errors.New("password must be between 8 and 72 bytes")
 	}
 
-	if utf8.RuneCountInString(ur.Bio) > 255 {
+	if utf8.RuneCountInString(r.Bio) > 255 {
 		return errors.New("bio must be 255 characters or less")
 	}
 
@@ -123,26 +123,26 @@ func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		var req createUserRequest
 		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			logger.InfoContext(r.Context(), "failed to decode body", "error", err)
+			logger.InfoContext(r.Context(), "failed to decode create user request", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 		req.Normalize()
 		if err := req.Validate(); err != nil {
-			logger.InfoContext(r.Context(), err.Error(), "error", err)
+			logger.InfoContext(r.Context(), "create user request validation failed", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 
 		birthday, err := parseBirthday(req.Birthday)
 		if err != nil {
-			logger.InfoContext(r.Context(), "invalid birthday format", "error", err)
+			logger.InfoContext(r.Context(), "create user birthday validation failed", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 		hashedPassword, err := password2hash(req.Password)
 		if err != nil {
-			logger.ErrorContext(r.Context(), "failed to hash password", "error", err)
+			logger.ErrorContext(r.Context(), "failed to hash password for user creation", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -165,22 +165,25 @@ func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
 				switch {
 				case strings.Contains(mysqlErr.Message, "uq_users_email"):
+					logger.InfoContext(r.Context(), "create user conflict", "field", "email")
 					http.Error(w, "email already exists", http.StatusConflict)
 				case strings.Contains(mysqlErr.Message, "uq_users_handle"):
+					logger.InfoContext(r.Context(), "create user conflict", "field", "handle")
 					http.Error(w, "handle already exists", http.StatusConflict)
 				default:
+					logger.InfoContext(r.Context(), "create user conflict")
 					http.Error(w, "user already exists", http.StatusConflict)
 				}
 				return
 			}
-			logger.ErrorContext(r.Context(), "failed to execute insert query", "error", err)
+			logger.ErrorContext(r.Context(), "failed to create user", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		id, err := result.LastInsertId()
 		if err != nil {
-			logger.ErrorContext(r.Context(), "failed to get last insert id", "error", err)
+			logger.ErrorContext(r.Context(), "failed to read created user id", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -198,6 +201,8 @@ func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		_ = json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			logger.ErrorContext(r.Context(), "failed to encode create user response", "error", err)
+		}
 	}
 }
