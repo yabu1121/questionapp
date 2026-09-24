@@ -84,8 +84,8 @@ create table questionnaire (
     created_at datetime(6) default current_timestamp(6),
     updated_at datetime(6) null default null on update current_timestamp(6),
 
-    key idx_questionnaire_status_created (status, created_at)
-    key idx_comments_questionnaire_created (questionnaire_id, created_at)
+    key idx_questionnaire_status_created (status, created_at),
+    key idx_questionnaire_created_by (created_by, created_at),
     constraint fk_created_by foreign key (created_by) references users(id) on delete cascade,
     constraint fk_questionnaire_language_code foreign key (language_code) references language(code)
 );
@@ -128,6 +128,7 @@ create table comments (
     parent_comment_id bigint,
     created_at datetime(6) default current_timestamp(6),
 
+    key idx_comments_questionnaire_created (questionnaire_id, created_at),
     constraint fk_comments_questionnaire_id foreign key (questionnaire_id) references questionnaire(id) on delete cascade,
     constraint fk_comments_user_id foreign key (user_id) references users(id) on delete cascade,
     constraint fk_parent_comment_id foreign key (parent_comment_id) references comments(id) on delete cascade
