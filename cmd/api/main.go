@@ -82,7 +82,7 @@ func main() {
 	mux.HandleFunc("GET /health", health)
 
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
-	mux.HandleFunc("POST /v1/users/{user_id}/setting", handler.CreateUserSetting(db, logger))
+	mux.HandleFunc("PUT /v1/users/{user_id}/setting", handler.UpsertUserSetting(db, logger))
 
 	log.Println("listening on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
