@@ -1,0 +1,12 @@
+drop table if exists questionnaire_like;
+drop table if exists comments;
+drop table if exists answer_item;
+drop table if exists vote;
+drop table if exists choice;
+drop table if exists questionnaire;
+drop table if exists user_notification_setting;
+drop table if exists user_language_setting;
+drop table if exists language;
+drop table if exists user_setting;
+drop table if exists follows;
+drop table if exists users;
