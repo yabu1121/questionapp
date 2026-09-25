@@ -46,23 +46,12 @@ create table user_setting (
     constraint fk_user_setting_id foreign key (user_id) references users(id) on delete cascade
 );
 
-create table user_language_setting (
-    user_id bigint not null,
-    language_code varchar(20) not null default 'ja',
-    is_primary boolean not null default 0,
-
-    primary key (user_id, language_code),
-    constraint fk_user_language_setting_id foreign key (user_id) references users(id) on delete cascade,
-    constraint fk_language_setting_code foreign key (language_code) references language(code)
-);
-
 create table user_notification_setting (
-    id bigint not null auto_increment primary key,
     user_id bigint not null,
     channel varchar(20) not null,
     is_enabled boolean not null default 1,
 
-    unique key uq_user_channel (user_id, channel),
+    primary key pk_user_notification_setting (user_id, channel),
     constraint fk_user_notification_setting_id foreign key (user_id) references users(id) on delete cascade
 );
 
