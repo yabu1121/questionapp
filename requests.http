@@ -1,5 +1,7 @@
 @baseUrl = http://localhost:8080
 @userId = 1
+@questionnaireId = 1
+@choiceId = 1
 
 ### Health
 GET {{baseUrl}}/health
@@ -77,4 +79,14 @@ Accept: application/json
       "title": "Python"
     }
   ]
+}
+
+### Create vote
+POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/votes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user_id": {{userId}},
+  "choice_ids": [{{choiceId}}]
 }
