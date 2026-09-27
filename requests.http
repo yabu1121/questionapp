@@ -1,0 +1,80 @@
+@baseUrl = http://localhost:8080
+@userId = 1
+
+### Health
+GET {{baseUrl}}/health
+Accept: application/json
+
+### Create language
+POST {{baseUrl}}/v1/languages
+Content-Type: application/json
+Accept: application/json
+
+{
+  "code": "ja",
+  "name": "Japanese",
+  "native_name": "日本語",
+  "description": "Japanese language"
+}
+
+### Create user
+POST {{baseUrl}}/v1/users
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "test-user",
+  "display_name": "テストユーザー",
+  "handle": "test_user",
+  "email": "test@example.com",
+  "password": "password123",
+  "bio": "",
+  "avatar_url": "",
+  "birthday": "2000-01-01"
+}
+
+### Upsert user setting
+PUT {{baseUrl}}/v1/users/{{userId}}/setting
+Content-Type: application/json
+Accept: application/json
+
+{
+  "ui_mode": "dark",
+  "timezone": "Asia/Tokyo"
+}
+
+### Upsert email notification setting
+PUT {{baseUrl}}/v1/users/{{userId}}/notification-settings/email
+Content-Type: application/json
+Accept: application/json
+
+{
+  "is_enabled": true
+}
+
+### Create published questionnaire with choices
+POST {{baseUrl}}/v1/questionnaires/published
+Content-Type: application/json
+Accept: application/json
+
+{
+  "created_by": {{userId}},
+  "title": "好きなプログラミング言語は？",
+  "description": "普段よく使う言語を選んでください",
+  "deadline": "2026-12-31T23:59:59+09:00",
+  "type": "single_choice",
+  "max_choices": 1,
+  "language_code": "ja",
+  "visibility": "after_vote",
+  "choices": [
+    {
+      "title": "Go"
+    },
+    {
+      "title": "TypeScript"
+    },
+    {
+      "title": "Python"
+    }
+  ]
+}

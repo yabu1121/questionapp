@@ -9,11 +9,28 @@ include $(ENV_FILE)
 export DB_DSN
 endif
 
-.PHONY: up db-down db-logs migrate-down migrate-version api
+.PHONY: up down reset db-down db-logs migrate-down migrate-version api
 
 up:
 	docker compose up -d --wait mysql
 	migrate -path db/migrations -database '$(MYSQL_DSN)' up
+
+down:
+	@if [ -f "$(API_PID_FILE)" ]; then \
+		pid="$$(cat "$(API_PID_FILE)")"; \
+		if kill -0 "$$pid" 2>/dev/null; then \
+			echo "stopping API server (PID $$pid)"; \
+			kill "$$pid"; \
+			while kill -0 "$$pid" 2>/dev/null; do sleep 0.1; done; \
+		fi; \
+		rm -f "$(API_PID_FILE)"; \
+	fi
+	@rm -f "$(API_BIN)"
+	docker compose down -v --remove-orphans
+
+reset: down
+	$(MAKE) up
+	$(MAKE) api
 
 db-down:
 	docker compose down
