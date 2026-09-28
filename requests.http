@@ -2,6 +2,7 @@
 @userId = 1
 @questionnaireId = 1
 @choiceId = 1
+@parentCommentId = 1
 
 ### Health
 GET {{baseUrl}}/health
@@ -89,4 +90,35 @@ Accept: application/json
 {
   "user_id": {{userId}},
   "choice_ids": [{{choiceId}}]
+}
+
+### Create comment
+POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/comments
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user_id": {{userId}},
+  "content": "Goが好きです",
+  "parent_comment_id": null
+}
+
+### Create reply comment
+POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/comments
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user_id": {{userId}},
+  "content": "このコメントへの返信です",
+  "parent_comment_id": {{parentCommentId}}
+}
+
+### Create questionnaire like
+POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/likes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user_id": {{userId}}
 }
