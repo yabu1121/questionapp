@@ -88,6 +88,7 @@ func main() {
 	mux.HandleFunc("POST /v1/questionnaires/{status}", handler.CreateQuestionnaire(db, logger))
 	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/votes", handler.CreateVote(db, logger))
 	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/comments", handler.CreateComment(db, logger))
+	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/likes", handler.CreateQuestionnaireLike(db, logger))
 
 	log.Println("listening on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
