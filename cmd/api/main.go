@@ -81,6 +81,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", health)
 
+	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
+
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
 	mux.HandleFunc("PUT /v1/users/{user_id}/setting", handler.UpsertUserSetting(db, logger))
 	mux.HandleFunc("PUT /v1/users/{user_id}/notification-settings/{channel}", handler.UpsertUserNotificationSetting(db, logger))
