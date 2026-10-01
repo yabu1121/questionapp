@@ -89,6 +89,7 @@ func main() {
 	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}/likes", handler.GetQuestionnaireLikes(db, logger))
 	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}/likes/count", handler.GetQuestionnaireLikesCount(db, logger))
 	mux.HandleFunc("GET /v1/users/{user_id}/likes", handler.GetUserLikes(db, logger))
+	mux.HandleFunc("GET /v1/users/{user_id}/following", handler.GetUserFollowing(db, logger))
 
 	mux.HandleFunc("PUT /v1/users/{user_id}/setting", handler.UpsertUserSetting(db, logger))
 	mux.HandleFunc("PUT /v1/users/{user_id}/notification-settings/{channel}", handler.UpsertUserNotificationSetting(db, logger))

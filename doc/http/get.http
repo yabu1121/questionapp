@@ -43,3 +43,7 @@ Accept: application/json
 ### Get user likes
 GET {{baseUrl}}/v1/users/{{seedUserId}}/likes
 Accept: application/json
+
+### Get users followed by user
+GET {{baseUrl}}/v1/users/{{seedUserId}}/following
+Accept: application/json
