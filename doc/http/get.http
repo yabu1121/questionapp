@@ -12,6 +12,10 @@
 GET {{baseUrl}}/health
 Accept: application/json
 
+### Get questionnaires
+GET {{baseUrl}}/v1/questionnaires?limit=20&offset=0
+Accept: application/json
+
 ### Get languages
 GET {{baseUrl}}/v1/languages
 Accept: application/json
