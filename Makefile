@@ -1,4 +1,6 @@
 MYSQL_DSN ?= mysql://root:password@tcp(127.0.0.1:3306)/jev?multiStatements=true
+MYSQL_ROOT_PASSWORD ?= password
+MYSQL_DATABASE ?= jev
 
 ENV_FILE ?= .env
 API_BIN ?= /tmp/jev-api
@@ -9,7 +11,7 @@ include $(ENV_FILE)
 export DB_DSN
 endif
 
-.PHONY: up down reset db-down db-logs migrate-down migrate-version api
+.PHONY: up down reset db-down db-logs migrate-down migrate-version seed api
 
 up:
 	docker compose up -d --wait mysql
@@ -43,6 +45,9 @@ migrate-down:
 
 migrate-version:
 	migrate -path db/migrations -database '$(MYSQL_DSN)' version
+
+seed:
+	docker compose exec -T mysql mysql --default-character-set=utf8mb4 -uroot -p'$(MYSQL_ROOT_PASSWORD)' '$(MYSQL_DATABASE)' < db/seeds/development.sql
 
 api:
 	@test -n "$(DB_DSN)" || (echo "DB_DSN is not set in $(ENV_FILE)" >&2; exit 1)
