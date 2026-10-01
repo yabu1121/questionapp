@@ -83,6 +83,7 @@ func main() {
 
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
 	mux.HandleFunc("GET /v1/users/{user_id}/setting", handler.GetUserSetting(db, logger))
+	mux.HandleFunc("GET /v1/users/{user_id}/notification-settings", handler.GetUserNotificationSetting(db, logger))
 
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
 	mux.HandleFunc("PUT /v1/users/{user_id}/setting", handler.UpsertUserSetting(db, logger))
