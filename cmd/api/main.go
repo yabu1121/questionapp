@@ -82,6 +82,7 @@ func main() {
 	mux.HandleFunc("GET /health", health)
 
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
+	mux.HandleFunc("GET /v1/languages", handler.GetLanguages(db, logger))
 	mux.HandleFunc("GET /v1/users/{user_id}/setting", handler.GetUserSetting(db, logger))
 	mux.HandleFunc("GET /v1/users/{user_id}/notification-settings", handler.GetUserNotificationSetting(db, logger))
 
