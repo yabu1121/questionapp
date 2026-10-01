@@ -51,3 +51,7 @@ Accept: application/json
 ### Get user followers
 GET {{baseUrl}}/v1/users/{{seedUserId}}/followers
 Accept: application/json
+
+### Get questionnaire choices
+GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/choices
+Accept: application/json
