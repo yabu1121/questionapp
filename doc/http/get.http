@@ -39,3 +39,7 @@ Accept: application/json
 ### Get questionnaire like count
 GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/count
 Accept: application/json
+
+### Get user likes
+GET {{baseUrl}}/v1/users/{{seedUserId}}/likes
+Accept: application/json
