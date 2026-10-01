@@ -59,3 +59,7 @@ Accept: application/json
 ### Get questionnaire choices
 GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/choices
 Accept: application/json
+
+### Get user questionnaires
+GET {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires?limit=20&offset=0
+Accept: application/json
