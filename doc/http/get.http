@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:8080
+@userId = 1
+@questionnaireId = 1
+@choiceId = 1
+@parentCommentId = 1
+@seedUserId = 1001
+@seedQuestionnaireId = 2001
+@seedChoiceId = 3001
+
+
+### Health
+GET {{baseUrl}}/health
+Accept: application/json
+
+### Get languages
+GET {{baseUrl}}/v1/languages
+Accept: application/json
+
+### Get user setting
+GET {{baseUrl}}/v1/users/{{seedUserId}}/setting
+Accept: application/json
+
+### Get user notification settings
+GET {{baseUrl}}/v1/users/{{seedUserId}}/notification-settings
+Accept: application/json

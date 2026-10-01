@@ -4,10 +4,6 @@
 @choiceId = 1
 @parentCommentId = 1
 
-### Health
-GET {{baseUrl}}/health
-Accept: application/json
-
 ### Create language
 POST {{baseUrl}}/v1/languages
 Content-Type: application/json
@@ -34,25 +30,6 @@ Accept: application/json
   "bio": "",
   "avatar_url": "",
   "birthday": "2000-01-01"
-}
-
-### Upsert user setting
-PUT {{baseUrl}}/v1/users/{{userId}}/setting
-Content-Type: application/json
-Accept: application/json
-
-{
-  "ui_mode": "dark",
-  "timezone": "Asia/Tokyo"
-}
-
-### Upsert email notification setting
-PUT {{baseUrl}}/v1/users/{{userId}}/notification-settings/email
-Content-Type: application/json
-Accept: application/json
-
-{
-  "is_enabled": true
 }
 
 ### Create published questionnaire with choices
