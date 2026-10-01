@@ -23,3 +23,7 @@ Accept: application/json
 ### Get user notification settings
 GET {{baseUrl}}/v1/users/{{seedUserId}}/notification-settings
 Accept: application/json
+
+### Get questionnaire comments
+GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/comments
+Accept: application/json
