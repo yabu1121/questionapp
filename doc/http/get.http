@@ -27,3 +27,7 @@ Accept: application/json
 ### Get questionnaire comments
 GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/comments
 Accept: application/json
+
+### Get user comments
+GET {{baseUrl}}/v1/users/{{seedUserId}}/comments
+Accept: application/json
