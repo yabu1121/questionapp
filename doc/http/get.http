@@ -24,6 +24,10 @@ Accept: application/json
 GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/results
 Accept: application/json
 
+### Get questionnaire vote
+GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/votes/{{seedUserId}}
+Accept: application/json
+
 ### Get languages
 GET {{baseUrl}}/v1/languages
 Accept: application/json
