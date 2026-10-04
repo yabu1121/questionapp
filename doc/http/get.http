@@ -16,6 +16,10 @@ Accept: application/json
 GET {{baseUrl}}/v1/questionnaires?limit=20&offset=0
 Accept: application/json
 
+### Get questionnaire
+GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}
+Accept: application/json
+
 ### Get languages
 GET {{baseUrl}}/v1/languages
 Accept: application/json
