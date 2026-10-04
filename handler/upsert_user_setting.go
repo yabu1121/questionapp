@@ -56,6 +56,7 @@ func (r upsertUserSettingRequest) Validate() error {
 
 func UpsertUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		stringUserID := r.PathValue("user_id")
 		userID, err := strconv.ParseInt(stringUserID, 10, 64)
 		if err != nil {
@@ -70,7 +71,6 @@ func UpsertUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		var req upsertUserSettingRequest
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode upsert user setting request", "user_id", userID, "error", err)
 			http.Error(w, "request body must be valid JSON", http.StatusBadRequest)

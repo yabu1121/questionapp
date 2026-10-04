@@ -30,6 +30,7 @@ func (r createFollowRequest) Validate() error {
 
 func CreateFollow(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		followerID, err := strconv.ParseInt(r.PathValue("follower_id"), 10, 64)
 		if err != nil || followerID <= 0 {
 			logger.InfoContext(r.Context(), "failed to parse follower id for follow creation", "follower_id", r.PathValue("follower_id"), "error", err)

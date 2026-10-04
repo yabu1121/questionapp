@@ -29,6 +29,7 @@ func (r createQuestionnaireLikeRequest) Validate() error {
 
 func CreateQuestionnaireLike(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		var req createQuestionnaireLikeRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create questionnaire like", "error", err)
