@@ -67,3 +67,10 @@ api:
 	echo "API server started (PID $$pid)"; \
 	trap 'kill "$$pid" 2>/dev/null || true; rm -f "$(API_PID_FILE)"' EXIT INT TERM; \
 	wait "$$pid"
+
+query:
+	docker compose exec mysql mysql \
+		--default-character-set=utf8mb4 \
+		-uroot \
+		-p'$(MYSQL_ROOT_PASSWORD)' \
+		'$(MYSQL_DATABASE)'
