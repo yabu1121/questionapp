@@ -72,6 +72,9 @@ func (r patchUserProfileRequest) Validate() error {
 	if r.Handle != nil && utf8.RuneCountInString(*r.Handle) > 20 {
 		return errors.New("handle must be 20 characters or less")
 	}
+	if r.Handle != nil && strings.ContainsAny(*r.Handle, "/?#:@=&") {
+		return errors.New("handle contains invalid characters")
+	}
 	if r.Bio != nil && utf8.RuneCountInString(*r.Bio) > 255 {
 		return errors.New("bio must be 255 characters or less")
 	}
@@ -105,6 +108,21 @@ func PatchUserProfile(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		if err := req.Validate(); err != nil {
 			logger.InfoContext(r.Context(), "user profile update request validation failed", "user_id", userID, "error", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var exists bool
+		checkQuery := `select exists(select 1 from users where id = ?)`
+
+		if err := db.QueryRowContext(r.Context(), checkQuery, userID).Scan(&exists); err != nil {
+			logger.ErrorContext(r.Context(), "failed to check user existence before updating profile", "user_id", userID, "error", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if !exists {
+			logger.InfoContext(r.Context(), "user not found for profile update", "user_id", userID)
+			http.Error(w, "user not found", http.StatusNotFound)
 			return
 		}
 
