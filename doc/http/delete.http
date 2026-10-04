@@ -5,9 +5,13 @@
 @parentCommentId = 1
 @seedUserId = 1001
 @seedQuestionnaireId = 2001
+@seedFollowingUserId = 1002
 
 ### Delete questionnaire like
 DELETE {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/{{seedUserId}}
 
 ### Delete questionnaire
 DELETE {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires/{{seedQuestionnaireId}}
+
+### Delete follow
+DELETE {{baseUrl}}/v1/users/{{seedUserId}}/follows/{{seedFollowingUserId}}
