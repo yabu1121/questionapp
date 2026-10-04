@@ -122,7 +122,16 @@ func main() {
 	mux.HandleFunc("DELETE /v1/users/{user_id}", handler.DeleteUser(db, logger))
 
 	log.Println("listening on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
-		log.Fatal(err)
+	server := http.Server{
+		Addr:              ":8080",
+		Handler:           mux,
+		ReadTimeout:       10 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		MaxHeaderBytes:    1 << 20,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal("failed to serve API: ", err)
 	}
 }
