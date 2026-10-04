@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"jev/handler"
 	"log"
 	"log/slog"
@@ -13,24 +12,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 )
-
-type HealthResponse struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
-func health(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	response := HealthResponse{
-		Status:  "ok",
-		Message: "hello world",
-	}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("failed to encode health response: %v", err)
-	}
-}
 
 func GetDSN() string {
 	dsn := os.Getenv("DB_DSN")
@@ -83,7 +64,7 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", health)
+	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
 	mux.HandleFunc("GET /v1/languages", handler.GetLanguages(db, logger))
 	mux.HandleFunc("GET /v1/users/{user_id}/setting", handler.GetUserSetting(db, logger))
