@@ -8,3 +8,6 @@
 
 ### Delete questionnaire like
 DELETE {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/{{seedUserId}}
+
+### Delete questionnaire
+DELETE {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires/{{seedQuestionnaireId}}
