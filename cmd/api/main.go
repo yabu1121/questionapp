@@ -113,6 +113,7 @@ func main() {
 	mux.HandleFunc("DELETE /v1/users/{user_id}/questionnaires/{questionnaire_id}", handler.DeleteQuestionnaire(db, logger))
 	mux.HandleFunc("DELETE /v1/users/{follower_id}/follows/{following_id}", handler.DeleteFollow(db, logger))
 	mux.HandleFunc("DELETE /v1/users/{user_id}/comments/{comment_id}", handler.DeleteComment(db, logger))
+	mux.HandleFunc("DELETE /v1/users/{user_id}", handler.DeleteUser(db, logger))
 
 	log.Println("listening on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
