@@ -3,3 +3,8 @@
 @questionnaireId = 1
 @choiceId = 1
 @parentCommentId = 1
+@seedUserId = 1001
+@seedQuestionnaireId = 2001
+
+### Delete questionnaire like
+DELETE {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/{{seedUserId}}

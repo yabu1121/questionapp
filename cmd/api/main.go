@@ -109,6 +109,8 @@ func main() {
 	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/likes", handler.CreateQuestionnaireLike(db, logger))
 	mux.HandleFunc("POST /v1/users/{follower_id}/follows", handler.CreateFollow(db, logger))
 
+	mux.HandleFunc("DELETE /v1/questionnaires/{questionnaire_id}/likes/{user_id}", handler.DeleteQuestionnaireLike(db, logger))
+
 	log.Println("listening on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatal(err)
