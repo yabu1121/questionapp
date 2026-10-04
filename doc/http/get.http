@@ -72,6 +72,18 @@ Accept: application/json
 GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/choices
 Accept: application/json
 
+### Get questionnaires with defaults
+GET {{baseUrl}}/v1/questionnaires
+Accept: application/json
+
+### Get empty questionnaire page
+GET {{baseUrl}}/v1/questionnaires?limit=20&offset=1000
+Accept: application/json
+
+### Invalid questionnaire limit
+GET {{baseUrl}}/v1/questionnaires?limit=101&offset=0
+Accept: application/json
+
 ### Get user questionnaires
 GET {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires?limit=20&offset=0
 Accept: application/json
