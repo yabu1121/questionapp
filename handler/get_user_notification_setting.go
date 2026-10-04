@@ -32,7 +32,11 @@ func GetUserNotificationSetting(db *sql.DB, logger *slog.Logger) http.HandlerFun
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close user notification setting rows", "user_id", userID, "error", cerr)
+			}
+		}()
 
 		userNotificationSettings := make([]getUserNotificationSettingResponse, 0)
 		for rows.Next() {

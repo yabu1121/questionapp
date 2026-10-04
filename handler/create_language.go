@@ -70,7 +70,6 @@ func CreateLanguage(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		var req createLanguageRequest
 
-
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create language request", "error", err)
 			http.Error(w, "request must be valid JSON", http.StatusBadRequest)

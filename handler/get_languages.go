@@ -24,7 +24,11 @@ func GetLanguages(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close language rows", "error", cerr)
+			}
+		}()
 
 		languages := make([]getLanguageResponse, 0)
 		for rows.Next() {
@@ -43,7 +47,6 @@ func GetLanguages(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			}
 			languages = append(languages, language)
 		}
-
 		if err := rows.Err(); err != nil {
 			logger.ErrorContext(r.Context(), "failed while iterating over languages", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)

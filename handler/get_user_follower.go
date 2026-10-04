@@ -32,7 +32,11 @@ func GetUserFollowers(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close user follower rows", "user_id", userID, "error", cerr)
+			}
+		}()
 
 		userFollowers := make([]getUserFollowerResponse, 0)
 		for rows.Next() {

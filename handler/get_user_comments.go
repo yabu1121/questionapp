@@ -34,7 +34,11 @@ func GetUserComments(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close user comment rows", "user_id", userID, "error", cerr)
+			}
+		}()
 
 		getComments := make([]getUserCommentResponse, 0)
 		for rows.Next() {

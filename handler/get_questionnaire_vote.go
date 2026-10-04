@@ -55,7 +55,11 @@ func GetQuestionnaireVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close questionnaire vote rows", "questionnaire_id", questionnaireID, "user_id", userID, "error", cerr)
+			}
+		}()
 
 		response := getQuestionnaireVoteResponse{
 			Choices: make([]questionnaireVoteChoice, 0),

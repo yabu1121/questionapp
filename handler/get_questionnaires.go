@@ -90,7 +90,11 @@ func GetQuestionnaires(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close questionnaire rows", "limit", limit, "offset", offset, "error", cerr)
+			}
+		}()
 
 		questionnaires := make([]questionnaireListItem, 0)
 		questionnaireIDs := make([]int64, 0)
