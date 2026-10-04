@@ -158,7 +158,11 @@ func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer tx.Rollback()
+		defer func() {
+			if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
+				logger.ErrorContext(r.Context(), "failed to roll back create questionnaire transaction", "created_by", req.CreatedBy, "error", rerr)
+			}
+		}()
 
 		// insert questionnaire
 		questionnaireQuery := `

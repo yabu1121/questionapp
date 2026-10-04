@@ -76,7 +76,11 @@ func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer tx.Rollback()
+		defer func() {
+			if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
+				logger.ErrorContext(r.Context(), "failed to roll back create comment transaction", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", rerr)
+			}
+		}()
 
 		getQuestionnaireQuery := `select id from questionnaire where id = ?`
 		var foundQuestionnaireID int64
