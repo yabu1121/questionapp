@@ -6,6 +6,7 @@
 @seedUserId = 1001
 @seedQuestionnaireId = 2001
 @seedFollowingUserId = 1002
+@seedCommentId = 6003
 
 ### Delete questionnaire like
 DELETE {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/{{seedUserId}}
@@ -15,3 +16,6 @@ DELETE {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires/{{seedQuestionnaireId}
 
 ### Delete follow
 DELETE {{baseUrl}}/v1/users/{{seedUserId}}/follows/{{seedFollowingUserId}}
+
+### Delete comment
+DELETE {{baseUrl}}/v1/users/{{seedUserId}}/comments/{{seedCommentId}}
