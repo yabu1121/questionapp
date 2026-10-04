@@ -1,0 +1,12 @@
+@baseUrl = http://localhost:8080
+@seedUserId = 1001
+
+### Patch user profile
+PATCH {{baseUrl}}/v1/users/{{seedUserId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "display_name": "更新後のタロウ",
+  "bio": "GoとMySQLを勉強しています"
+}
