@@ -161,7 +161,11 @@ func GetQuestionnaires(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer choiceRows.Close()
+		defer func() {
+			if cerr := choiceRows.Close(); cerr != nil {
+				logger.ErrorContext(r.Context(), "failed to close questionnaire choice rows", "questionnaire_ids", questionnaireIDs, "error", cerr)
+			}
+		}()
 
 		choicesByQuestionnaireID := make(map[int64][]questionnaireListChoice)
 		for choiceRows.Next() {
