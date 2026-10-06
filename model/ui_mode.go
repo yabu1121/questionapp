@@ -1,5 +1,7 @@
 package model
 
+import "errors"
+
 type UIMode string
 
 const (
@@ -7,6 +9,16 @@ const (
 	UIModeLight  UIMode = "light"
 	UIModeSystem UIMode = "system"
 )
+
+func ParseUIMode(value string) (UIMode, error) {
+	uiMode := UIMode(value)
+	switch uiMode {
+	case UIModeDark, UIModeLight, UIModeSystem:
+		return uiMode, nil
+	default:
+		return "", errors.New("invalid UI mode")
+	}
+}
 
 type UserSetting struct {
 	UserID   int64
