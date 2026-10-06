@@ -88,6 +88,7 @@ func main() {
 
 	mux.HandleFunc("PATCH /v1/users/{user_id}", handler.PatchUserProfile(db, logger))
 	mux.HandleFunc("PATCH /v1/users/{user_id}/setting", handler.PatchUserSetting(db, logger))
+	mux.HandleFunc("PATCH /v1/users/{user_id}/questionnaires/{questionnaire_id}/status", handler.PatchQuestionnaireStatus(db, logger))
 
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
 	mux.HandleFunc("POST /v1/languages", handler.CreateLanguage(db, logger))

@@ -23,6 +23,24 @@ func ParseQuestionnaireStatus(value string) (QuestionnaireStatus, error) {
 	}
 }
 
+func CheckStatusIsValid(current, next QuestionnaireStatus) bool {
+	switch current {
+	case QuestionnaireStatusDraft:
+		if next == QuestionnaireStatusPublished {
+			return true
+		}
+		return false
+	case QuestionnaireStatusPublished:
+		if next == QuestionnaireStatusClosed {
+			return true
+		}
+		return false
+	case QuestionnaireStatusClosed:
+		return false
+	}
+	return false
+}
+
 type QuestionType string
 
 const (
