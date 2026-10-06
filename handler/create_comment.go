@@ -63,7 +63,8 @@ func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 
-		questionnaireID, err := strconv.ParseInt(r.PathValue("questionnaire_id"), 10, 64)
+		stringQuestionnaireID := r.PathValue("questionnaire_id")
+		questionnaireID, err := strconv.ParseInt(stringQuestionnaireID, 10, 64)
 		if err != nil || questionnaireID <= 0 {
 			logger.InfoContext(r.Context(), "failed to cast questionnaire id in create comment", "error", err)
 			http.Error(w, "invalid questionnaire id", http.StatusBadRequest)
@@ -82,7 +83,7 @@ func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			}
 		}()
 
-		getQuestionnaireQuery := `select id from questionnaire where id = ?`
+		getQuestionnaireQuery := `select id from questionnaire where id = ? and status in ('published', 'closed')`
 		var foundQuestionnaireID int64
 
 		err = tx.QueryRowContext(r.Context(), getQuestionnaireQuery, questionnaireID).Scan(&foundQuestionnaireID)
