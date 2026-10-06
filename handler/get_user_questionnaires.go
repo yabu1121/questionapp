@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"jev/model"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -54,15 +55,28 @@ func GetUserQuestionnaires(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 
+		stringStatus := r.URL.Query().Get("status")
+
+		if stringStatus == "" {
+			stringStatus = "published"
+		}
+
+		status, err := model.ParseQuestionnaireStatus(stringStatus)
+		if err != nil {
+			logger.InfoContext(r.Context(), "invalid status for user questionnaire list", "user_id", userID, "status", stringStatus, "error", err)
+			http.Error(w, "status must be draft, published, or closed", http.StatusBadRequest)
+			return
+		}
+
 		query := `
 		select id, created_by, title, description, status, deadline, type, max_choices, language_code, language_detected, visibility, created_at, updated_at
 		from questionnaire
-		where status = 'published' and created_by = ?
+		where status = ? and created_by = ?
 		order by created_at desc, id desc
 		limit ? offset ?
 		`
 
-		rows, err := db.QueryContext(r.Context(), query, userID, limit, offset)
+		rows, err := db.QueryContext(r.Context(), query, status, userID, limit, offset)
 		if err != nil {
 			logger.ErrorContext(r.Context(), "failed to retrieve user questionnaires", "user_id", userID, "limit", limit, "offset", offset, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
