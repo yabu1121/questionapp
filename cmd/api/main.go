@@ -87,6 +87,7 @@ func main() {
 	mux.HandleFunc("PUT /v1/users/{user_id}/notification-settings/{channel}", handler.UpsertUserNotificationSetting(db, logger))
 
 	mux.HandleFunc("PATCH /v1/users/{user_id}", handler.PatchUserProfile(db, logger))
+	mux.HandleFunc("PATCH /v1/users/{user_id}/setting", handler.PatchUserSetting(db, logger))
 
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
 	mux.HandleFunc("POST /v1/languages", handler.CreateLanguage(db, logger))

@@ -10,3 +10,12 @@ Accept: application/json
   "display_name": "更新後のタロウ",
   "bio": "GoとMySQLを勉強しています"
 }
+
+### Patch user setting
+PATCH {{baseUrl}}/v1/users/{{seedUserId}}/setting
+Content-Type: application/json
+
+{
+  "ui_mode": "dark",
+  "timezone": "Asia/Tokyo"
+}
