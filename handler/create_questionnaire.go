@@ -130,6 +130,12 @@ func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 
+		if status == model.QuestionnaireStatusClosed {
+			logger.InfoContext(r.Context(), "closed questionnaire cannot be created", "status", status)
+			http.Error(w, "questionnaire cannot be created with closed status", http.StatusBadRequest)
+			return
+		}
+
 		req.Normalize()
 
 		questionType, err := model.ParseQuestionType(req.Type)
