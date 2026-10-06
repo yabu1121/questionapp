@@ -58,6 +58,8 @@ func (r patchUserSettingRequest) Validate() error {
 
 func PatchUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxPatchUserSettingRequestBodyBytes)
+
 		stringUserID := r.PathValue("user_id")
 
 		userID, err := strconv.ParseInt(stringUserID, 10, 64)
@@ -66,8 +68,6 @@ func PatchUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
 			return
 		}
-
-		r.Body = http.MaxBytesReader(w, r.Body, maxPatchUserSettingRequestBodyBytes)
 
 		var req patchUserSettingRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
