@@ -50,6 +50,21 @@ func CreateQuestionnaireLike(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 
+		getQuestionnaireQuery := `select id from questionnaire where id = ? and status in ('published', 'closed')`
+
+		var foundQuestionnaireID int64
+		err = db.QueryRowContext(r.Context(), getQuestionnaireQuery, questionnaireID).Scan(&foundQuestionnaireID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				logger.InfoContext(r.Context(), "questionnaire not found for like creation", "questionnaire_id", questionnaireID, "user_id", req.UserID)
+				http.Error(w, "questionnaire not found", http.StatusNotFound)
+				return
+			}
+			logger.ErrorContext(r.Context(), "failed to read questionnaire for like creation", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		insertQuery := `insert into questionnaire_like (questionnaire_id, user_id) values (?, ?)`
 		_, err = db.ExecContext(r.Context(), insertQuery, questionnaireID, req.UserID)
 		if err != nil {
