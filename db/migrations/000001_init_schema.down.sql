@@ -1,3 +1,4 @@
+drop table if exists sessions;
 drop table if exists questionnaire_like;
 drop table if exists comments;
 drop table if exists answer_item;

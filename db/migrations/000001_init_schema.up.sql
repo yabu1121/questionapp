@@ -132,3 +132,15 @@ create table questionnaire_like (
     constraint fk_questionnaire_like_id foreign key (questionnaire_id) references questionnaire(id) on delete cascade,
     constraint fk_questionnaire_like_user_id foreign key (user_id) references users(id) on delete cascade
 );
+
+create table sessions (
+    token_hash binary(32) primary key,
+    user_id bigint not null,
+    expires_at datetime(6) not null,
+    created_at datetime(6) not null default current_timestamp(6),
+
+    key idx_sessions_key_user_id (user_id),
+    key idx_sessions_key_expires_at (expires_at),
+
+    constraint fk_sessions_user_id foreign key (user_id) references users(id) on delete cascade
+);

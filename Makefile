@@ -9,6 +9,7 @@ API_PID_FILE ?= /tmp/jev-api.pid
 ifneq (,$(wildcard $(ENV_FILE)))
 include $(ENV_FILE)
 export DB_DSN
+export APP_ENV
 endif
 
 .PHONY: up down reset db-down db-logs migrate-down migrate-version seed api

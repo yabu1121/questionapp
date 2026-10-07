@@ -64,6 +64,8 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("POST /v1/auth/login", handler.Login(db, logger))
+
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
 	mux.HandleFunc("GET /v1/languages", handler.GetLanguages(db, logger))

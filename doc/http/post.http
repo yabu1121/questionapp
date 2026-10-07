@@ -32,6 +32,15 @@ Accept: application/json
   "birthday": "2000-01-01"
 }
 
+### Login
+POST {{baseUrl}}/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
 ### Create published questionnaire with choices
 POST {{baseUrl}}/v1/questionnaires/published
 Content-Type: application/json
