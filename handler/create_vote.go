@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"jev/model"
 	"log/slog"
 	"net/http"
@@ -12,8 +13,6 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 )
-
-const maxCreateVoteRequestBodyBytes = 1 << 20
 
 type createVoteRequest struct {
 	UserID    int64   `json:"user_id"`
@@ -71,14 +70,14 @@ func validateVoteRules(q model.Questionnaire, choiceIDs []int64) error {
 
 func CreateVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateVoteRequestBodyBytes)
+
 		questionnaireID, err := strconv.ParseInt(r.PathValue("questionnaire_id"), 10, 64)
 		if err != nil || questionnaireID <= 0 {
 			logger.InfoContext(r.Context(), "failed to parse questionnaire id for vote creation", "questionnaire_id", r.PathValue("questionnaire_id"), "error", err)
 			http.Error(w, "questionnaire_id must be a positive integer", http.StatusBadRequest)
 			return
 		}
-
-		r.Body = http.MaxBytesReader(w, r.Body, maxCreateVoteRequestBodyBytes)
 
 		var req createVoteRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

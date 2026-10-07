@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"log/slog"
 	"net/http"
 	"net/mail"
@@ -121,7 +122,7 @@ func password2hash(password string) (string, error) {
 func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req createUserRequest
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateUserRequestBodyBytes)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create user request", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -47,7 +48,7 @@ func (r *createCommentRequest) Normalize() {
 
 func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateCommentRequestBodyBytes)
 		var req createCommentRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create comment request", "error", err)

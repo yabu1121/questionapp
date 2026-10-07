@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"jev/model"
 	"log/slog"
 	"net/http"
@@ -56,7 +57,8 @@ func (r upsertUserSettingRequest) Validate() error {
 
 func UpsertUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxUpsertUserSettingRequestBodyBytes)
+
 		stringUserID := r.PathValue("user_id")
 		userID, err := strconv.ParseInt(stringUserID, 10, 64)
 		if err != nil {

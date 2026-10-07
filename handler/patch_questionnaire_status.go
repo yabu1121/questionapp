@@ -4,14 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"jev/model"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 )
-
-const maxPatchQuestionnaireStatusRequestBodyBytes = 1 << 20
 
 type patchQuestionnaireStatusRequest struct {
 	Status string `json:"status"`
@@ -33,7 +32,7 @@ func (r patchQuestionnaireStatusRequest) Validate() error {
 
 func PatchQuestionnaireStatus(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, maxPatchQuestionnaireStatusRequestBodyBytes)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxPatchQuestionnaireStatusRequestBodyBytes)
 
 		stringQuestionnaireID := r.PathValue("questionnaire_id")
 		stringUserID := r.PathValue("user_id")

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"jev/model"
 	"log/slog"
 	"net/http"
@@ -115,7 +116,7 @@ func (r *createQuestionnaireRequest) Normalize() {
 
 func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateQuestionnaireRequestBodyBytes)
 		var req createQuestionnaireRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create questionnaire request", "error", err)

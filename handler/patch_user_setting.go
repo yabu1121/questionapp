@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"jev/model"
 	"log/slog"
 	"net/http"
@@ -11,8 +12,6 @@ import (
 	"strings"
 	"time"
 )
-
-const maxPatchUserSettingRequestBodyBytes = 1 << 20
 
 type patchUserSettingRequest struct {
 	UIMode   *string `json:"ui_mode"`
@@ -58,7 +57,7 @@ func (r patchUserSettingRequest) Validate() error {
 
 func PatchUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, maxPatchUserSettingRequestBodyBytes)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxPatchUserSettingRequestBodyBytes)
 
 		stringUserID := r.PathValue("user_id")
 

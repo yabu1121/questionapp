@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -67,7 +68,7 @@ func (r *createLanguageRequest) Normalize() {
 
 func CreateLanguage(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateLanguageRequestBodyBytes)
 		var req createLanguageRequest
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

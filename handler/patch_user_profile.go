@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/config"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -12,8 +13,6 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 )
-
-const maxPatchUserProfileRequestBodyBytes = 1 << 20
 
 type patchUserProfileRequest struct {
 	Name        *string `json:"name"`
@@ -86,6 +85,8 @@ func (r patchUserProfileRequest) Validate() error {
 
 func PatchUserProfile(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxPatchUserProfileRequestBodyBytes)
+
 		stringUserID := r.PathValue("user_id")
 		userID, err := strconv.ParseInt(stringUserID, 10, 64)
 		if err != nil || userID <= 0 {
@@ -93,8 +94,6 @@ func PatchUserProfile(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
 			return
 		}
-
-		r.Body = http.MaxBytesReader(w, r.Body, maxPatchUserProfileRequestBodyBytes)
 
 		var req patchUserProfileRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
