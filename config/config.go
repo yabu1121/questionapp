@@ -28,6 +28,7 @@ type Config struct {
 	DBDSN        string
 	APIAddress   string
 	PprofAddress string
+	IsDevelop    bool
 }
 
 func Load() (Config, error) {
@@ -35,6 +36,7 @@ func Load() (Config, error) {
 	dbDSN := os.Getenv("DB_DSN")
 	apiAddress := os.Getenv("API_ADDRESS")
 	pprofAddress := os.Getenv("PPROF_ADDRESS")
+	isDevelop := appEnv == "development"
 
 	if strings.TrimSpace(dbDSN) == "" {
 		return Config{}, errors.New("DB_DSN is required")
@@ -42,8 +44,8 @@ func Load() (Config, error) {
 	if strings.TrimSpace(apiAddress) == "" {
 		return Config{}, errors.New("API_ADDRESS is required")
 	}
-	if strings.TrimSpace(pprofAddress) == "" {
-		return Config{}, errors.New("PPROF_ADDRESS is required")
+	if isDevelop && strings.TrimSpace(pprofAddress) == "" {
+		return Config{}, errors.New("PPROF_ADDRESS is required in development")
 	}
 
 	cfg := Config{
@@ -51,6 +53,7 @@ func Load() (Config, error) {
 		DBDSN:        dbDSN,
 		APIAddress:   apiAddress,
 		PprofAddress: pprofAddress,
+		IsDevelop:    isDevelop,
 	}
 	return cfg, nil
 }

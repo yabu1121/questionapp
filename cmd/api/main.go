@@ -56,7 +56,9 @@ func main() {
 		MaxHeaderBytes:    1 << 20,
 	}
 
-	go observability.StartPprof(logger, cfg.PprofAddress)
+	if cfg.IsDevelop {
+		go observability.StartPprof(logger, cfg.PprofAddress)
+	}
 
 	logger.Info("API server listening", "address", cfg.APIAddress)
 	if err := server.ListenAndServe(); err != nil {
