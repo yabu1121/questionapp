@@ -3,7 +3,7 @@
 @draftQuestionnaireId = 2004
 
 ### Patch user profile
-PATCH {{baseUrl}}/v1/users/{{seedUserId}}
+PATCH {{baseUrl}}/v1/me
 Content-Type: application/json
 Accept: application/json
 
@@ -13,7 +13,7 @@ Accept: application/json
 }
 
 ### Patch user setting
-PATCH {{baseUrl}}/v1/users/{{seedUserId}}/setting
+PATCH {{baseUrl}}/v1/me/setting
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Publish draft questionnaire
-PATCH {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires/{{draftQuestionnaireId}}/status
+PATCH {{baseUrl}}/v1/me/questionnaires/{{draftQuestionnaireId}}/status
 Content-Type: application/json
 
 {

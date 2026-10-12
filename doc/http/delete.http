@@ -10,16 +10,16 @@
 @seedUserForDeletionId = 1003
 
 ### Delete questionnaire like
-DELETE {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/{{seedUserId}}
+DELETE {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes
 
 ### Delete questionnaire
-DELETE {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires/{{seedQuestionnaireId}}
+DELETE {{baseUrl}}/v1/me/questionnaires/{{seedQuestionnaireId}}
 
 ### Delete follow
-DELETE {{baseUrl}}/v1/users/{{seedUserId}}/follows/{{seedFollowingUserId}}
+DELETE {{baseUrl}}/v1/me/follows/{{seedFollowingUserId}}
 
 ### Delete comment
-DELETE {{baseUrl}}/v1/users/{{seedUserId}}/comments/{{seedCommentId}}
+DELETE {{baseUrl}}/v1/me/comments/{{seedCommentId}}
 
 ### Delete user
-DELETE {{baseUrl}}/v1/users/{{seedUserForDeletionId}}
+DELETE {{baseUrl}}/v1/me

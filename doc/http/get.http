@@ -33,11 +33,11 @@ GET {{baseUrl}}/v1/languages
 Accept: application/json
 
 ### Get user setting
-GET {{baseUrl}}/v1/users/{{seedUserId}}/setting
+GET {{baseUrl}}/v1/me/setting
 Accept: application/json
 
 ### Get user notification settings
-GET {{baseUrl}}/v1/users/{{seedUserId}}/notification-settings
+GET {{baseUrl}}/v1/me/notification-settings
 Accept: application/json
 
 ### Get questionnaire comments
@@ -57,7 +57,7 @@ GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/likes/count
 Accept: application/json
 
 ### Get user likes
-GET {{baseUrl}}/v1/users/{{seedUserId}}/likes
+GET {{baseUrl}}/v1/me/likes
 Accept: application/json
 
 ### Get users followed by user

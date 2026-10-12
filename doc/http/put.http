@@ -5,7 +5,7 @@
 @parentCommentId = 1
 
 ### Upsert user setting
-PUT {{baseUrl}}/v1/users/{{userId}}/setting
+PUT {{baseUrl}}/v1/me/setting
 Content-Type: application/json
 Accept: application/json
 
@@ -15,7 +15,7 @@ Accept: application/json
 }
 
 ### Upsert email notification setting
-PUT {{baseUrl}}/v1/users/{{userId}}/notification-settings/email
+PUT {{baseUrl}}/v1/me/notification-settings/email
 Content-Type: application/json
 Accept: application/json
 

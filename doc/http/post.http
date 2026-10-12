@@ -3,6 +3,7 @@
 @questionnaireId = 1
 @choiceId = 1
 @parentCommentId = 1
+@followingUserId = 2
 
 ### Create language
 POST {{baseUrl}}/v1/languages
@@ -47,7 +48,6 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "created_by": {{userId}},
   "title": "好きなプログラミング言語は？",
   "description": "普段よく使う言語を選んでください",
   "deadline": "2026-12-31T23:59:59+09:00",
@@ -74,7 +74,6 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "user_id": {{userId}},
   "choice_ids": [{{choiceId}}]
 }
 
@@ -84,7 +83,6 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "user_id": {{userId}},
   "content": "Goが好きです",
   "parent_comment_id": null
 }
@@ -95,16 +93,19 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "user_id": {{userId}},
   "content": "このコメントへの返信です",
   "parent_comment_id": {{parentCommentId}}
 }
 
 ### Create questionnaire like
 POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/likes
+Accept: application/json
+
+### Follow user
+POST {{baseUrl}}/v1/me/follows
 Content-Type: application/json
 Accept: application/json
 
 {
-  "user_id": {{userId}}
+  "following_id": {{followingUserId}}
 }
