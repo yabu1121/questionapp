@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"jev/config"
+	"jev/internal/config"
 	"log/slog"
 	"net/http"
 	"strings"

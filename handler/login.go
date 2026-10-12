@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"jev/config"
+	"jev/internal/config"
 	"log/slog"
 	"net/http"
 	"os"
