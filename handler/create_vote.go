@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"jev/config"
+	"jev/middleware"
 	"jev/model"
 	"log/slog"
 	"net/http"
@@ -15,7 +16,6 @@ import (
 )
 
 type createVoteRequest struct {
-	UserID    int64   `json:"user_id"`
 	ChoiceIDs []int64 `json:"choice_ids"`
 }
 
@@ -27,10 +27,6 @@ type createVoteResponse struct {
 }
 
 func (r createVoteRequest) Validate() error {
-	if r.UserID <= 0 {
-		return errors.New("user id must be positive integer")
-	}
-
 	if len(r.ChoiceIDs) == 0 {
 		return errors.New("at least one choice id is required")
 	}
@@ -72,6 +68,13 @@ func CreateVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateVoteRequestBodyBytes)
 
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		questionnaireID, err := strconv.ParseInt(r.PathValue("questionnaire_id"), 10, 64)
 		if err != nil || questionnaireID <= 0 {
 			logger.InfoContext(r.Context(), "failed to parse questionnaire id for vote creation", "questionnaire_id", r.PathValue("questionnaire_id"), "error", err)
@@ -87,20 +90,20 @@ func CreateVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		if err := req.Validate(); err != nil {
-			logger.InfoContext(r.Context(), "create vote request validation failed", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", err)
+			logger.InfoContext(r.Context(), "create vote request validation failed", "questionnaire_id", questionnaireID, "user_id", userID, "error", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		tx, err := db.BeginTx(r.Context(), nil)
 		if err != nil {
-			logger.ErrorContext(r.Context(), "failed to begin create vote transaction", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", err)
+			logger.ErrorContext(r.Context(), "failed to begin create vote transaction", "questionnaire_id", questionnaireID, "user_id", userID, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 		defer func() {
 			if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
-				logger.ErrorContext(r.Context(), "failed to roll back create vote transaction", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", rerr)
+				logger.ErrorContext(r.Context(), "failed to roll back create vote transaction", "questionnaire_id", questionnaireID, "user_id", userID, "error", rerr)
 			}
 		}()
 
@@ -172,28 +175,28 @@ func CreateVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		voteQuery := `insert into vote (questionnaire_id, user_id) value (?, ?)`
-		voteResult, err := tx.ExecContext(r.Context(), voteQuery, questionnaireID, req.UserID)
+		voteResult, err := tx.ExecContext(r.Context(), voteQuery, questionnaireID, userID)
 		if err != nil {
 			var mysqlErr *mysql.MySQLError
 			if errors.As(err, &mysqlErr) {
 				switch mysqlErr.Number {
 				case 1062:
-					logger.InfoContext(r.Context(), "user has already voted", "questionnaire_id", questionnaireID, "user_id", req.UserID)
+					logger.InfoContext(r.Context(), "user has already voted", "questionnaire_id", questionnaireID, "user_id", userID)
 					http.Error(w, "user has already voted", http.StatusConflict)
 					return
 				case 1452:
-					logger.InfoContext(r.Context(), "user not found for vote creation", "user_id", req.UserID)
+					logger.InfoContext(r.Context(), "user not found for vote creation", "user_id", userID)
 					http.Error(w, "user not found", http.StatusNotFound)
 					return
 				}
 			}
-			logger.ErrorContext(r.Context(), "failed to create vote", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", err)
+			logger.ErrorContext(r.Context(), "failed to create vote", "questionnaire_id", questionnaireID, "user_id", userID, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 		voteID, err := voteResult.LastInsertId()
 		if err != nil {
-			logger.ErrorContext(r.Context(), "failed to read created vote id", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", err)
+			logger.ErrorContext(r.Context(), "failed to read created vote id", "questionnaire_id", questionnaireID, "user_id", userID, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -209,7 +212,7 @@ func CreateVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		if err := tx.Commit(); err != nil {
-			logger.ErrorContext(r.Context(), "failed to commit create vote transaction", "questionnaire_id", questionnaireID, "user_id", req.UserID, "vote_id", voteID, "error", err)
+			logger.ErrorContext(r.Context(), "failed to commit create vote transaction", "questionnaire_id", questionnaireID, "user_id", userID, "vote_id", voteID, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -217,7 +220,7 @@ func CreateVote(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		res := createVoteResponse{
 			ID:              voteID,
 			QuestionnaireID: questionnaireID,
-			UserID:          req.UserID,
+			UserID:          userID,
 			ChoiceIDs:       req.ChoiceIDs,
 		}
 

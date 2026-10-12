@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"jev/config"
+	"jev/middleware"
 	"jev/model"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -59,12 +59,10 @@ func PatchUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, config.MaxPatchUserSettingRequestBodyBytes)
 
-		stringUserID := r.PathValue("user_id")
-
-		userID, err := strconv.ParseInt(stringUserID, 10, 64)
-		if err != nil || userID <= 0 {
-			logger.InfoContext(r.Context(), "invalid user id for user setting update", "user_id", stringUserID)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 

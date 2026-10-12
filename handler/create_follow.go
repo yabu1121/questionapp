@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"jev/config"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -32,10 +32,11 @@ func (r createFollowRequest) Validate() error {
 func CreateFollow(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateFollowRequestBodyBytes)
-		followerID, err := strconv.ParseInt(r.PathValue("follower_id"), 10, 64)
-		if err != nil || followerID <= 0 {
-			logger.InfoContext(r.Context(), "failed to parse follower id for follow creation", "follower_id", r.PathValue("follower_id"), "error", err)
-			http.Error(w, "follower_id must be a positive integer", http.StatusBadRequest)
+
+		followerID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
@@ -59,7 +60,7 @@ func CreateFollow(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		insertQuery := `insert into follows (follower_id, following_id) values (?, ?)`
-		_, err = db.ExecContext(r.Context(), insertQuery, followerID, req.FollowingID)
+		_, err := db.ExecContext(r.Context(), insertQuery, followerID, req.FollowingID)
 		if err != nil {
 			var mysqlErr *mysql.MySQLError
 			if errors.As(err, &mysqlErr) {

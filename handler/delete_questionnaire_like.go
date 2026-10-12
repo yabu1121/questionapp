@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -9,19 +10,19 @@ import (
 
 func DeleteQuestionnaireLike(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		stringQuestionnaireID := r.PathValue("questionnaire_id")
-		stringUserID := r.PathValue("user_id")
 
 		questionnaireID, err := strconv.ParseInt(stringQuestionnaireID, 10, 64)
 		if err != nil || questionnaireID <= 0 {
 			logger.InfoContext(r.Context(), "invalid questionnaire id for questionnaire like deletion", "questionnaire_id", stringQuestionnaireID)
 			http.Error(w, "questionnaire_id must be a positive integer", http.StatusBadRequest)
-			return
-		}
-		userID, err := strconv.ParseInt(stringUserID, 10, 64)
-		if err != nil || userID <= 0 {
-			logger.InfoContext(r.Context(), "invalid user id for questionnaire like deletion", "user_id", stringUserID)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
 			return
 		}
 

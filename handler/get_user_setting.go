@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"jev/middleware"
 	"jev/model"
 	"log/slog"
 	"net/http"
-	"strconv"
 )
 
 type getUserSettingResponse struct {
@@ -18,16 +18,10 @@ type getUserSettingResponse struct {
 
 func GetUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		stringUserID := r.PathValue("user_id")
-		userID, err := strconv.ParseInt(stringUserID, 10, 64)
-		if err != nil {
-			logger.InfoContext(r.Context(), "failed to parse user id for user setting retrieval", "user_id", stringUserID, "error", err)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
-			return
-		}
-		if userID <= 0 {
-			logger.InfoContext(r.Context(), "invalid user id for user setting retrieval", "user_id", userID)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
@@ -35,7 +29,7 @@ func GetUserSetting(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		row := db.QueryRowContext(r.Context(), query, userID)
 
 		var res getUserSettingResponse
-		err = row.Scan(
+		err := row.Scan(
 			&res.UserID,
 			&res.UIMode,
 			&res.Timezone,

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -9,15 +10,14 @@ import (
 
 func DeleteComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		stringUserID := r.PathValue("user_id")
-		stringCommentID := r.PathValue("comment_id")
-
-		userID, err := strconv.ParseInt(stringUserID, 10, 64)
-		if err != nil || userID <= 0 {
-			logger.InfoContext(r.Context(), "invalid user id for comment deletion", "user_id", stringUserID)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
+
+		stringCommentID := r.PathValue("comment_id")
 
 		commentID, err := strconv.ParseInt(stringCommentID, 10, 64)
 		if err != nil || commentID <= 0 {

@@ -3,9 +3,9 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -17,11 +17,10 @@ type getUserLikesResponse struct {
 
 func GetUserLikes(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		stringUserID := r.PathValue("user_id")
-		userID, err := strconv.ParseInt(stringUserID, 10, 64)
-		if err != nil || userID <= 0 {
-			logger.InfoContext(r.Context(), "invalid user id for like retrieval", "user_id", stringUserID)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 

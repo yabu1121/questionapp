@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"jev/config"
+	"jev/middleware"
 	"jev/model"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -35,16 +35,10 @@ func UpsertUserNotificationSetting(db *sql.DB, logger *slog.Logger) http.Handler
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, config.MaxUpsertUserNotificationSettingRequestBodyBytes)
 
-		stringID := r.PathValue("user_id")
-		userID, err := strconv.ParseInt(stringID, 10, 64)
-		if err != nil {
-			logger.InfoContext(r.Context(), "failed to parse user id for user notification setting upsert", "user_id", stringID, "error", err)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
-			return
-		}
-		if userID <= 0 {
-			logger.InfoContext(r.Context(), "invalid user id for user notification setting upsert", "user_id", userID)
-			http.Error(w, "user_id must be a positive integer", http.StatusBadRequest)
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 

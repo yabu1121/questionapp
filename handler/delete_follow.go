@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -9,15 +10,15 @@ import (
 
 func DeleteFollow(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		stringFollowerID := r.PathValue("follower_id")
-		stringFollowingID := r.PathValue("following_id")
-
-		followerID, err := strconv.ParseInt(stringFollowerID, 10, 64)
-		if err != nil || followerID <= 0 {
-			logger.InfoContext(r.Context(), "invalid follower id for follow deletion", "follower_id", stringFollowerID)
-			http.Error(w, "follower_id must be a positive integer", http.StatusBadRequest)
+		followerID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
+
+		stringFollowingID := r.PathValue("following_id")
+
 		followingID, err := strconv.ParseInt(stringFollowingID, 10, 64)
 		if err != nil || followingID <= 0 {
 			logger.InfoContext(r.Context(), "invalid following id for follow deletion", "following_id", stringFollowingID)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"jev/config"
+	"jev/middleware"
 	"jev/model"
 	"log/slog"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 )
 
 type createQuestionnaireRequest struct {
-	CreatedBy    int64                 `json:"created_by"`
 	Title        string                `json:"title"`
 	Description  string                `json:"description"`
 	Deadline     time.Time             `json:"deadline"`
@@ -51,10 +51,6 @@ type createChoiceResponse struct {
 }
 
 func (r createQuestionnaireRequest) Validate() error {
-	if r.CreatedBy <= 0 {
-		return errors.New("created_by must be a positive integer")
-	}
-
 	if r.Title == "" {
 		return errors.New("title is required")
 	}
@@ -117,6 +113,14 @@ func (r *createQuestionnaireRequest) Normalize() {
 func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateQuestionnaireRequestBodyBytes)
+
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		var req createQuestionnaireRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create questionnaire request", "error", err)
@@ -167,7 +171,7 @@ func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 		defer func() {
 			if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
-				logger.ErrorContext(r.Context(), "failed to roll back create questionnaire transaction", "created_by", req.CreatedBy, "error", rerr)
+				logger.ErrorContext(r.Context(), "failed to roll back create questionnaire transaction", "created_by", userID, "error", rerr)
 			}
 		}()
 
@@ -176,7 +180,7 @@ func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			insert into questionnaire (created_by, title, description, status, deadline, type, max_choices, language_code, language_detected, visibility)
 			values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
-		questionnaireResult, err := tx.ExecContext(r.Context(), questionnaireQuery, req.CreatedBy, req.Title, req.Description, status, req.Deadline, questionType, req.MaxChoices, req.LanguageCode, false, visibility)
+		questionnaireResult, err := tx.ExecContext(r.Context(), questionnaireQuery, userID, req.Title, req.Description, status, req.Deadline, questionType, req.MaxChoices, req.LanguageCode, false, visibility)
 		if err != nil {
 			logger.ErrorContext(r.Context(), "failed to insert questionnaire", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
@@ -226,7 +230,7 @@ func CreateQuestionnaire(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 
 		res := createQuestionnaireResponse{
 			ID:               questionnaireID,
-			CreatedBy:        req.CreatedBy,
+			CreatedBy:        userID,
 			Title:            req.Title,
 			Description:      req.Description,
 			Status:           status,

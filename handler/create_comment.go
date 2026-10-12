@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"jev/config"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -12,7 +13,6 @@ import (
 )
 
 type createCommentRequest struct {
-	UserID          int64  `json:"user_id"`
 	Content         string `json:"content"`
 	ParentCommentID *int64 `json:"parent_comment_id"`
 }
@@ -25,10 +25,6 @@ type createCommentResponse struct {
 }
 
 func (r createCommentRequest) Validate() error {
-	if r.UserID <= 0 {
-		return errors.New("user id must be positive integer")
-	}
-
 	if r.Content == "" {
 		return errors.New("content is required")
 	}
@@ -49,6 +45,14 @@ func (r *createCommentRequest) Normalize() {
 func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateCommentRequestBodyBytes)
+
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		var req createCommentRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.InfoContext(r.Context(), "failed to decode create comment request", "error", err)
@@ -80,7 +84,7 @@ func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 		defer func() {
 			if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
-				logger.ErrorContext(r.Context(), "failed to roll back create comment transaction", "questionnaire_id", questionnaireID, "user_id", req.UserID, "error", rerr)
+				logger.ErrorContext(r.Context(), "failed to roll back create comment transaction", "questionnaire_id", questionnaireID, "user_id", userID, "error", rerr)
 			}
 		}()
 
@@ -126,7 +130,7 @@ func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		insertCommentQuery := `insert into comments (questionnaire_id, user_id, content, parent_comment_id) values (?, ?, ?, ?)`
-		createCommentResult, err := tx.ExecContext(r.Context(), insertCommentQuery, questionnaireID, req.UserID, req.Content, req.ParentCommentID)
+		createCommentResult, err := tx.ExecContext(r.Context(), insertCommentQuery, questionnaireID, userID, req.Content, req.ParentCommentID)
 		if err != nil {
 			logger.ErrorContext(r.Context(), "failed to exec insert create comment", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
@@ -141,14 +145,14 @@ func CreateComment(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		}
 
 		if err := tx.Commit(); err != nil {
-			logger.ErrorContext(r.Context(), "failed to commit create comment transaction", "questionnaire_id", questionnaireID, "user_id", req.UserID, "comment_id", commentID, "error", err)
+			logger.ErrorContext(r.Context(), "failed to commit create comment transaction", "questionnaire_id", questionnaireID, "user_id", userID, "comment_id", commentID, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		res := createCommentResponse{
 			ID:              commentID,
-			UserID:          req.UserID,
+			UserID:          userID,
 			Content:         req.Content,
 			ParentCommentID: req.ParentCommentID,
 		}
