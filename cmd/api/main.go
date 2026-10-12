@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"jev/internal/config"
+	"jev/config"
 	"jev/internal/database"
 	"jev/internal/httpapi"
 	"jev/internal/observability"

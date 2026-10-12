@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"jev/internal/config"
+	"jev/config"
 	"jev/middleware"
 	"jev/model"
 	"log/slog"
