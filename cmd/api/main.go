@@ -11,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "net/http/pprof"
 )
 
 func GetDSN() string {
@@ -117,6 +118,14 @@ func main() {
 		IdleTimeout:       30 * time.Second,
 		MaxHeaderBytes:    1 << 20,
 	}
+
+	go func() {
+		log.Println("pprof listening on http://127.0.0.1:6060")
+
+		if err := http.ListenAndServe("127.0.0.1:6060", nil); err != nil {
+			log.Printf("pprof server stopped: %v", err)
+		}
+	}()
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("failed to serve API: ", err)
