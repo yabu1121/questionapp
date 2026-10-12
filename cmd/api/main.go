@@ -65,6 +65,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/auth/login", handler.Login(db, logger))
+	mux.HandleFunc("GET /v1/me", handler.GetMe(db, logger))
 
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
@@ -116,6 +117,7 @@ func main() {
 		IdleTimeout:       30 * time.Second,
 		MaxHeaderBytes:    1 << 20,
 	}
+
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("failed to serve API: ", err)
 	}
