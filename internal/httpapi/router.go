@@ -13,6 +13,7 @@ func NewRouter(db *sql.DB, logger *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /v1/auth/login", handler.Login(db, logger))
+	mux.HandleFunc("POST /v1/auth/logout", handler.Logout(db, logger))
 
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
@@ -28,7 +29,6 @@ func NewRouter(db *sql.DB, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("GET /v1/users/{user_id}/questionnaires", handler.GetUserQuestionnaires(db, logger))
 	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}", handler.GetQuestionnaire(db, logger))
 	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}/results", handler.GetQuestionnaireResults(db, logger))
-	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}/votes/{user_id}", handler.GetQuestionnaireVote(db, logger))
 
 	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
 	mux.HandleFunc("POST /v1/languages", handler.CreateLanguage(db, logger))
@@ -38,9 +38,10 @@ func NewRouter(db *sql.DB, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("GET /v1/me/likes", middleware.Authenticate(db, logger, handler.GetUserLikes(db, logger)))
 	mux.HandleFunc("GET /v1/me/setting", middleware.Authenticate(db, logger, handler.GetUserSetting(db, logger)))
 	mux.HandleFunc("GET /v1/me/notification-settings", middleware.Authenticate(db, logger, handler.GetUserNotificationSetting(db, logger)))
+	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}/vote", middleware.Authenticate(db, logger, handler.GetQuestionnaireVote(db, logger)))
 
 	mux.HandleFunc("POST /v1/questionnaires/{status}", middleware.Authenticate(db, logger, handler.CreateQuestionnaire(db, logger)))
-	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/votes", middleware.Authenticate(db, logger, handler.CreateVote(db, logger)))
+	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/vote", middleware.Authenticate(db, logger, handler.CreateVote(db, logger)))
 	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/comments", middleware.Authenticate(db, logger, handler.CreateComment(db, logger)))
 	mux.HandleFunc("POST /v1/questionnaires/{questionnaire_id}/likes", middleware.Authenticate(db, logger, handler.CreateQuestionnaireLike(db, logger)))
 	mux.HandleFunc("POST /v1/me/follows", middleware.Authenticate(db, logger, handler.CreateFollow(db, logger)))

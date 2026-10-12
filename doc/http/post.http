@@ -42,6 +42,9 @@ Content-Type: application/json
   "password": "password123"
 }
 
+### Logout
+POST {{baseUrl}}/v1/auth/logout
+
 ### Create published questionnaire with choices
 POST {{baseUrl}}/v1/questionnaires/published
 Content-Type: application/json
@@ -69,7 +72,7 @@ Accept: application/json
 }
 
 ### Create vote
-POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/votes
+POST {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/vote
 Content-Type: application/json
 Accept: application/json
 
