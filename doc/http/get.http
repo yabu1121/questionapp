@@ -95,3 +95,7 @@ Accept: application/json
 ### Get user closed questionnaires
 GET {{baseUrl}}/v1/users/{{seedUserId}}/questionnaires?status=closed&limit=20&offset=0
 Accept: application/json
+
+### Get authenticated user
+GET {{baseUrl}}/v1/me
+Accept: application/json

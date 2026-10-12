@@ -1,11 +1,10 @@
 package handler
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"jev/middleware"
 	"log/slog"
 	"net/http"
 )
@@ -22,46 +21,28 @@ type getMeResponse struct {
 
 func GetMe(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("questionnaire_session")
-		if err != nil {
-			logger.InfoContext(r.Context(), "failed to authenticate request because session cookie is missing or invalid")
-			http.Error(w, "authentication required", http.StatusUnauthorized)
+		userID, ok := middleware.AuthenticatedUserID(r.Context())
+		if !ok {
+			logger.ErrorContext(r.Context(), "authenticated user id is missing from request context")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-
-		rawToken := cookie.Value
-
-		tokenBytes, err := base64.RawURLEncoding.DecodeString(rawToken)
-		if err != nil {
-			logger.InfoContext(r.Context(), "failed to authenticate request because session token encoding is invalid")
-			http.Error(w, "authentication required", http.StatusUnauthorized)
-			return
-		}
-
-		if len(tokenBytes) != 32 {
-			logger.InfoContext(r.Context(), "failed to authenticate request because session token length is invalid")
-			http.Error(w, "authentication required", http.StatusUnauthorized)
-			return
-		}
-
-		tokenHash := sha256.Sum256(tokenBytes)
 
 		query := `
 			select
-				users.id,
-				users.name,
-				users.display_name,
-				users.handle,
-				users.email,
-				users.bio,
-				users.avatar_url
-			from sessions
-			join users on sessions.user_id = users.id
-			where sessions.token_hash = ? and sessions.expires_at > current_timestamp(6)
+				id,
+				name,
+				display_name,
+				handle,
+				email,
+				bio,
+				avatar_url
+			from users
+			where id = ?
 		`
 		var user getMeResponse
 
-		err = db.QueryRowContext(r.Context(), query, tokenHash[:]).Scan(
+		err := db.QueryRowContext(r.Context(), query, userID).Scan(
 			&user.ID,
 			&user.Name,
 			&user.DisplayName,
@@ -72,11 +53,11 @@ func GetMe(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				logger.InfoContext(r.Context(), "failed to authenticate request because session is invalid or expired")
+				logger.InfoContext(r.Context(), "authenticated user not found", "user_id", userID)
 				http.Error(w, "authentication required", http.StatusUnauthorized)
 				return
 			}
-			logger.ErrorContext(r.Context(), "failed to retrieve authenticated user", "error", err)
+			logger.ErrorContext(r.Context(), "failed to retrieve authenticated user", "user_id", userID, "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}

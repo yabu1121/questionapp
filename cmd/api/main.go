@@ -4,14 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"jev/handler"
+	"jev/middleware"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	_ "net/http/pprof"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func GetDSN() string {
@@ -65,8 +67,9 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("POST /v1/auth/login", handler.Login(db, logger))
-	mux.HandleFunc("GET /v1/me", handler.GetMe(db, logger))
+	mux.HandleFunc("GET /v1/me", middleware.Authenticate(db, logger, handler.GetMe(db, logger)))
 
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
