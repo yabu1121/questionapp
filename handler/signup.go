@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type createUserRequest struct {
+type signupRequest struct {
 	Name        string `json:"name"`
 	DisplayName string `json:"display_name"`
 	Handle      string `json:"handle"`
@@ -27,7 +27,7 @@ type createUserRequest struct {
 	Birthday    string `json:"birthday"`
 }
 
-type createUserResponse struct {
+type signupResponse struct {
 	ID          int64      `json:"id"`
 	Name        string     `json:"name"`
 	DisplayName string     `json:"display_name"`
@@ -38,7 +38,7 @@ type createUserResponse struct {
 	Birthday    *time.Time `json:"birthday"`
 }
 
-func (r *createUserRequest) Normalize() {
+func (r *signupRequest) Normalize() {
 	r.Name = strings.TrimSpace(r.Name)
 	r.DisplayName = strings.TrimSpace(r.DisplayName)
 	r.Handle = strings.TrimSpace(r.Handle)
@@ -47,7 +47,7 @@ func (r *createUserRequest) Normalize() {
 	r.Birthday = strings.TrimSpace(r.Birthday)
 }
 
-func (r createUserRequest) Validate() error {
+func (r signupRequest) Validate() error {
 	if r.Name == "" {
 		return errors.New("name is required")
 	}
@@ -119,31 +119,31 @@ func password2hash(password string) (string, error) {
 	return hashedString, nil
 }
 
-func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
+func Signup(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req createUserRequest
-		r.Body = http.MaxBytesReader(w, r.Body, config.MaxCreateUserRequestBodyBytes)
+		var req signupRequest
+		r.Body = http.MaxBytesReader(w, r.Body, config.MaxSignupRequestBodyBytes)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			logger.InfoContext(r.Context(), "failed to decode create user request", "error", err)
+			logger.InfoContext(r.Context(), "failed to decode signup request", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 		req.Normalize()
 		if err := req.Validate(); err != nil {
-			logger.InfoContext(r.Context(), "create user request validation failed", "error", err)
+			logger.InfoContext(r.Context(), "signup request validation failed", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 
 		birthday, err := parseBirthday(req.Birthday)
 		if err != nil {
-			logger.InfoContext(r.Context(), "create user birthday validation failed", "error", err)
+			logger.InfoContext(r.Context(), "signup birthday validation failed", "error", err)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 		hashedPassword, err := password2hash(req.Password)
 		if err != nil {
-			logger.ErrorContext(r.Context(), "failed to hash password for user creation", "error", err)
+			logger.ErrorContext(r.Context(), "failed to hash password for signup", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -166,30 +166,30 @@ func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 			if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
 				switch {
 				case strings.Contains(mysqlErr.Message, "uq_users_email"):
-					logger.InfoContext(r.Context(), "create user conflict", "field", "email")
+					logger.InfoContext(r.Context(), "signup conflict", "field", "email")
 					http.Error(w, "email already exists", http.StatusConflict)
 				case strings.Contains(mysqlErr.Message, "uq_users_handle"):
-					logger.InfoContext(r.Context(), "create user conflict", "field", "handle")
+					logger.InfoContext(r.Context(), "signup conflict", "field", "handle")
 					http.Error(w, "handle already exists", http.StatusConflict)
 				default:
-					logger.InfoContext(r.Context(), "create user conflict")
+					logger.InfoContext(r.Context(), "signup conflict")
 					http.Error(w, "user already exists", http.StatusConflict)
 				}
 				return
 			}
-			logger.ErrorContext(r.Context(), "failed to create user", "error", err)
+			logger.ErrorContext(r.Context(), "failed to create user during signup", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		id, err := result.LastInsertId()
 		if err != nil {
-			logger.ErrorContext(r.Context(), "failed to read created user id", "error", err)
+			logger.ErrorContext(r.Context(), "failed to read signed-up user id", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		response := createUserResponse{
+		response := signupResponse{
 			ID:          id,
 			Name:        req.Name,
 			DisplayName: req.DisplayName,
@@ -203,7 +203,7 @@ func CreateUser(db *sql.DB, logger *slog.Logger) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
-			logger.ErrorContext(r.Context(), "failed to encode create user response", "error", err)
+			logger.ErrorContext(r.Context(), "failed to encode signup response", "error", err)
 		}
 	}
 }

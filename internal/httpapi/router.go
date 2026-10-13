@@ -14,6 +14,7 @@ func NewRouter(db *sql.DB, logger *slog.Logger) http.Handler {
 
 	mux.HandleFunc("POST /v1/auth/login", handler.Login(db, logger))
 	mux.HandleFunc("POST /v1/auth/logout", handler.Logout(db, logger))
+	mux.HandleFunc("POST /v1/auth/signup", handler.Signup(db, logger))
 
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /v1/users/{user_id}", handler.GetUser(db, logger))
@@ -30,7 +31,6 @@ func NewRouter(db *sql.DB, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}", handler.GetQuestionnaire(db, logger))
 	mux.HandleFunc("GET /v1/questionnaires/{questionnaire_id}/results", handler.GetQuestionnaireResults(db, logger))
 
-	mux.HandleFunc("POST /v1/users", handler.CreateUser(db, logger))
 	mux.HandleFunc("POST /v1/languages", handler.CreateLanguage(db, logger))
 
 	// -- auth middleware --

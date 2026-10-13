@@ -17,8 +17,8 @@ Accept: application/json
   "description": "Japanese language"
 }
 
-### Create user
-POST {{baseUrl}}/v1/users
+### Signup
+POST {{baseUrl}}/v1/auth/signup
 Content-Type: application/json
 Accept: application/json
 
