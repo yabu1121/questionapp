@@ -21,11 +21,11 @@ GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}
 Accept: application/json
 
 ### Get questionnaire results
-GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/results
+GET {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/results
 Accept: application/json
 
 ### Get questionnaire vote
-GET {{baseUrl}}/v1/questionnaires/{{seedQuestionnaireId}}/vote
+GET {{baseUrl}}/v1/questionnaires/{{questionnaireId}}/vote
 Accept: application/json
 
 ### Get languages

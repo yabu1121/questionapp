@@ -10,6 +10,8 @@ ifneq (,$(wildcard $(ENV_FILE)))
 include $(ENV_FILE)
 export DB_DSN
 export APP_ENV
+export API_ADDRESS
+export PPROF_ADDRESS
 endif
 
 .PHONY: up down reset db-down db-logs migrate-down migrate-version seed api
